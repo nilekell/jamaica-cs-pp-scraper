@@ -18,7 +18,7 @@ AVAILABILITY_URL = "https://api.youcanbook.me/v1/availabilities"
 INTENTS_URL = "https://api.youcanbook.me/v1/intents"
 
 passport_intent_id = "itt_00d55e5a-bcb7-418f-983b-970d70c980e8"
-citizenship_intent_id = ""
+citizenship_intent_id = "itt_8536231b-c31c-49d0-b26f-7b4518a13189"
 
 def get_env():
     load_dotenv()

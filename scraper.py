@@ -7,19 +7,18 @@ import os
 from dotenv import load_dotenv
 from email.message import EmailMessage
 
-# Jamaica passport application appointment web link: https://jhcukconsular.youcanbook.me/
-# Jamaica citizenship application appointment web link: https://jhcukconsular-3.youcanbook.me/
-
 # visit url > intent created > intent used to fetch availability key > availability key used to fetch availabilities
 # intents can be used to create multiple availability keys (last created 6:20)
 # availability keys expire around 2-3 minutes after they are used to fetch slots data
 
 # TODO
 # intents created for every browser session, find way to automate retrieval of new intent value
-# startSearchAt should be incremented by (1) month when slots_data is empty, use iteration
 
 AVAILABILITY_URL = "https://api.youcanbook.me/v1/availabilities"
 INTENTS_URL = "https://api.youcanbook.me/v1/intents"
+
+passport_intent_id = "itt_00d55e5a-bcb7-418f-983b-970d70c980e8"
+citizenship_intent_id = ""
 
 def get_env():
     load_dotenv()
@@ -28,9 +27,10 @@ def get_env():
     destination_email = os.getenv('DESTINATION_EMAIL') # receiver
     return email, password, destination_email
 
-def fetch_availability_key(from_date=datetime.today().date()) -> str:
+def fetch_availability_key(intent_id, from_date=datetime.today().date()) -> str:
     search_date = from_date
-    search_url = f"{INTENTS_URL}/itt_00d55e5a-bcb7-418f-983b-970d70c980e8/availabilitykey?startSearchAt={search_date}"
+    print(f"Searching from {search_date}...")
+    search_url = f"{INTENTS_URL}/{intent_id}/availabilitykey?startSearchAt={search_date}"
     print("search_url:", search_url)
     response = requests.get(search_url)   
 
@@ -44,53 +44,72 @@ def fetch_availability_key(from_date=datetime.today().date()) -> str:
     return key
 
 
-def fetch_available_slots(from_date=datetime.today().date()):
-    availability_key = fetch_availability_key(from_date)
-    slots_url = f"{AVAILABILITY_URL}/{availability_key}"
-    print("slots url:", slots_url)
-    slots_response = requests.get(slots_url)
-    print("slots_response:", slots_response.status_code)
+def fetch_available_slots(intent_id: str, from_date=datetime.today().date()):
+    base_month = from_date.replace(day=1)
 
-    if not slots_response.ok:
-        print(f"Failed to fetch data from {slots_url} - ERROR: {slots_response.status_code}, {slots_response.content}")
-        sys.exit(1)
+    monthly_slots = []
 
-    data = slots_response.json()
-    slots_data = data['slots']
-    # print("slots_data:", slots_data)
+    # Fetch data for the current month plus the next 4 months (5 months total)
+    for i in range(5):
+        month_date = base_month + relativedelta(months=i)
 
-    if not slots_data:
-        attempts = 0
-        print(f"No available slots from {slots_url} - ERROR: {slots_response.status_code}")
-        print("retrying...")
-        
-        while attempts < 5: # Jamaica High Commission has set youcanbookme.me to only show appointments for next 5 months
-            attempts += 1
-            today = datetime.today()
-            print(today.date())
-            next_month_date = (today+relativedelta(months=+attempts)).date()
-            slots_data = fetch_available_slots(next_month_date)
+        # Fetch the availability key for this month
+        availability_key = fetch_availability_key(intent_id, month_date)
+        slots_url = f"{AVAILABILITY_URL}/{availability_key}"
 
-    return slots_data
+        response = requests.get(slots_url)
+        if not response.ok:
+            print(f"Failed to fetch data from {slots_url} - ERROR: {response.status_code}, {response.content}")
+            sys.exit(1)
 
-def extract_readable_data(slots_data):
-    text = ""
-    for slot in slots_data:
-        num_free_slots = slot['freeUnits']
-        apt_timestamp_ms = slot['startsAt']
-        appointment_timestamp = int(apt_timestamp_ms) / 1000
-        appointment_dt = datetime.fromtimestamp(appointment_timestamp)
+        data = response.json()
+        slots_data = data.get('slots', []) # provide empty list if no values found
+        monthly_slots.append({
+            'month_date': month_date,
+            'slots': slots_data
+        })
 
-        # Day of week (Mon, Tue, Wed...), numeric month/day, and HH:MM
-        day_of_week = appointment_dt.strftime('%a')
-        month_day = appointment_dt.strftime('%d/%m')
-        hour_minute = appointment_dt.strftime('%H:%M')
+    return monthly_slots
 
-        slots_word = "slots" if num_free_slots > 1 else "slot"
-        text += f"{num_free_slots} {slots_word} | {day_of_week} {month_day} at {hour_minute}\n"
 
-    print("text:", text)
-    return text
+def extract_readable_data(monthly_slots):
+    """
+    monthly_slots is a list of lists, where each sublist represents
+    all the slots for a given month.
+    """
+    overall_text = ""
+
+    for item in monthly_slots:
+        month_date = item['month_date']
+        slots_data = item['slots']
+
+        # Always generate a month/year label from month_date
+        month_label = month_date.strftime('%B %Y')  # e.g. "June 2025"
+        month_text = f"=== {month_label} ===\n"
+
+        if slots_data:
+            for slot in slots_data:
+                num_free_slots = slot['freeUnits']
+                apt_timestamp_ms = slot['startsAt']
+                appointment_timestamp = int(apt_timestamp_ms) / 1000
+                appointment_dt = datetime.fromtimestamp(appointment_timestamp)
+
+                # Day of week, numeric day/month, and HH:MM
+                day_of_week = appointment_dt.strftime('%a')     # e.g. "Thu"
+                day_month   = appointment_dt.strftime('%d/%m')  # e.g. "16/06"
+                hour_minute = appointment_dt.strftime('%H:%M')  # e.g. "11:10"
+
+                # Pluralize 'slot' if needed
+                slots_word = "slots" if num_free_slots > 1 else "slot"
+                month_text += f"{num_free_slots} {slots_word} | {day_of_week} {day_month} at {hour_minute}\n"
+        else:
+            month_text += "No slots available.\n"
+
+        overall_text += month_text + "\n"
+
+    print("text:", overall_text)
+    return overall_text
+
 
 def send_email(subject, text):
     smtp_server = smtplib.SMTP('smtp.gmail.com', 587) # creates SMTP session
@@ -108,7 +127,7 @@ def send_email(subject, text):
 
 
 EMAIL, PASSWORD, DESTINATION_EMAIL = get_env()
-passport_slots = fetch_available_slots()
+passport_slots = fetch_available_slots(passport_intent_id)
 passport_text = extract_readable_data(passport_slots)
 
 email_text = f'''
@@ -139,5 +158,5 @@ Kind regards,
 Nile
 '''
 
-print(email_text)
+# print(email_text)
 # send_email("Available Appointments - Jamaican High Commission", email_text)

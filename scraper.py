@@ -107,7 +107,7 @@ def extract_readable_data(monthly_slots):
 
         overall_text += month_text + "\n"
 
-    print("text:", overall_text)
+    print(overall_text)
     return overall_text
 
 
@@ -127,8 +127,12 @@ def send_email(subject, text):
 
 
 EMAIL, PASSWORD, DESTINATION_EMAIL = get_env()
+print("Scraping passport appointments...")
 passport_slots = fetch_available_slots(passport_intent_id)
 passport_text = extract_readable_data(passport_slots)
+print("Scraping citizenship appointments...")
+citizenship_slots = fetch_available_slots(citizenship_intent_id)
+citizenship_text = extract_readable_data(citizenship_slots)
 
 email_text = f'''
 Hello,
@@ -146,7 +150,7 @@ https://jhcukconsular.youcanbook.me/
 
 Citizenship appointments:
 
-{'<placeholder>'}
+{citizenship_text}
 
 For more information or to schedule your citizenship appointment, visit:
 https://jhcukconsular-3.youcanbook.me/

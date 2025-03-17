@@ -104,4 +104,34 @@ def send_email(subject, text):
 EMAIL, PASSWORD, DESTINATION_EMAIL = get_env()
 passport_slots = fetch_available_slots()
 passport_text = extract_readable_data(passport_slots)
-# send_email("Available Appointments - Jamaican High Commission", passport_text)
+
+email_text = f'''
+Hello,
+
+Below are the upcoming appointment dates for Jamaican High Commission passport and citizenship services:
+
+Passport appointments:
+
+{passport_text}
+
+For more information or to schedule your passport appointment, visit:
+https://jhcukconsular.youcanbook.me/
+
+
+
+Citizenship appointments:
+
+{'<placeholder>'}
+
+For more information or to schedule your citizenship appointment, visit:
+https://jhcukconsular-3.youcanbook.me/
+
+
+
+Kind regards,
+
+Nile
+'''
+
+print(email_text)
+# send_email("Available Appointments - Jamaican High Commission", email_text)

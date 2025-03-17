@@ -101,7 +101,7 @@ def extract_readable_data(monthly_slots):
 
                 # Pluralize 'slot' if needed
                 slots_word = "slots" if num_free_slots > 1 else "slot"
-                month_text += f"{num_free_slots} {slots_word} | {day_of_week} {day_month} at {hour_minute}\n"
+                month_text += f"{day_of_week} {day_month} at {hour_minute} | {num_free_slots} {slots_word}\n"
         else:
             month_text += "No slots available.\n"
 
@@ -163,4 +163,4 @@ Nile
 '''
 
 # print(email_text)
-# send_email("Available Appointments - Jamaican High Commission", email_text)
+send_email("Available Appointments - Jamaican High Commission", email_text)

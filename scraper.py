@@ -137,7 +137,7 @@ citizenship_text = extract_readable_data(citizenship_slots)
 email_text = f'''
 Hello,
 
-Below are the upcoming appointment dates for Jamaican High Commission passport and citizenship services:
+Below are the upcoming appointment dates for the United Kingdom Jamaican High Commission passport and citizenship services:
 
 Passport appointments:
 
@@ -156,10 +156,11 @@ For more information or to schedule your citizenship appointment, visit:
 https://jhcukconsular-3.youcanbook.me/
 
 
+For urgent consular matters only, please send an email to consular@jhcuk.com [NOT AFFILIATED WITH 'The Jamaica Scraping Team']
 
 Kind regards,
 
-Nile
+The Jamaica Scraping Team
 '''
 
 # print(email_text)

@@ -64,7 +64,7 @@ def fetch_available_slots(from_date=datetime.today().date()):
         print(f"No available slots from {slots_url} - ERROR: {slots_response.status_code}")
         print("retrying...")
         
-        while attempts < 7:
+        while attempts < 5: # Jamaica High Commission has set youcanbookme.me to only show appointments for next 5 months
             attempts += 1
             today = datetime.today()
             print(today.date())

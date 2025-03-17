@@ -79,9 +79,15 @@ def extract_readable_data(slots_data):
         num_free_slots = slot['freeUnits']
         apt_timestamp_ms = slot['startsAt']
         appointment_timestamp = int(apt_timestamp_ms) / 1000
+        appointment_dt = datetime.fromtimestamp(appointment_timestamp)
 
-        appointment_datetime = datetime.fromtimestamp(appointment_timestamp).strftime('%Y-%m-%d %H:%M:%S')
-        text += f"{num_free_slots} slots available at {appointment_datetime}\n"
+        # Day of week (Mon, Tue, Wed...), numeric month/day, and HH:MM
+        day_of_week = appointment_dt.strftime('%a')
+        month_day = appointment_dt.strftime('%d/%m')
+        hour_minute = appointment_dt.strftime('%H:%M')
+
+        slots_word = "slots" if num_free_slots > 1 else "slot"
+        text += f"{num_free_slots} {slots_word} | {day_of_week} {month_day} at {hour_minute}\n"
 
     print("text:", text)
     return text

@@ -27,6 +27,15 @@ def get_env():
     destination_email = os.getenv('DESTINATION_EMAIL') # receiver
     return email, password, destination_email
 
+def handle_bad_response(response: requests.Response):
+    if response.status_code == 429: # https://ycbm.stoplight.io/#rate-limits
+        print(f"Rate limit reached for {response.request.url} - ERROR: {response.status_code}, {response.content}")
+        sys.exit(1)
+    else:
+        print(f"Failed to fetch data from {response.request.url} - ERROR: {response.status_code}, {response.content}")
+        sys.exit(1)
+
+
 def fetch_availability_key(intent_id, from_date=datetime.today().date()) -> str:
     search_date = from_date
     print(f"Searching from {search_date}...")
@@ -35,8 +44,7 @@ def fetch_availability_key(intent_id, from_date=datetime.today().date()) -> str:
     response = requests.get(search_url)   
 
     if not response.ok:
-        print(f"Failed to fetch data from {search_url} - ERROR: {response.status_code}, {response.content}")
-        sys.exit(1)
+        handle_bad_response(response)
 
     data = response.json()
     key = data['key']
@@ -59,8 +67,7 @@ def fetch_available_slots(intent_id: str, from_date=datetime.today().date()):
 
         response = requests.get(slots_url)
         if not response.ok:
-            print(f"Failed to fetch data from {slots_url} - ERROR: {response.status_code}, {response.content}")
-            sys.exit(1)
+            handle_bad_response(response)
 
         data = response.json()
         slots_data = data.get('slots', []) # provide empty list if no values found

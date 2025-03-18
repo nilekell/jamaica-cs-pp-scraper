@@ -78,11 +78,13 @@ Create a file named .env in the same folder as the script, containing three vari
 EMAIL=your_email@gmail.com
 PASSWORD=xxxx xxxx xxxx xxxx
 DESTINATION_EMAIL=recipient@example.com
+TEMPLATE_PATH=/path/to/email_template.txt
 ```
 
 - EMAIL: Sender's email address (Gmail)
 - PASSWORD: Google app-specific password (16 characters in blocks of  4 separated by spacess)
 - DESTINATION_EMAIL: Recipient’s email address
+- TEMPLATE_PATH: File path to `email_template.txt`
 
 ---
 

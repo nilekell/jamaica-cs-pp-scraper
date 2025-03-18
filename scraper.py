@@ -13,7 +13,8 @@ def get_env():
     email = os.getenv('EMAIL') # sender
     password = os.getenv('PASSWORD') # google app-specific passwords can be created at https://myaccount.google.com/apppasswords
     destination_email = os.getenv('DESTINATION_EMAIL') # receiver
-    return email, password, destination_email
+    template_path = os.getenv('TEMPLATE_PATH') 
+    return email, password, destination_email, template_path
 
 def handle_bad_response(response: requests.Response):
     if response.status_code == 429: # https://ycbm.stoplight.io/#rate-limits
@@ -150,7 +151,7 @@ if __name__ == "__main__":
     INTENTS_URL = "https://api.youcanbook.me/v1/intents"
 
     print("Accessing credentials from .env file...")
-    EMAIL, PASSWORD, DESTINATION_EMAIL = get_env()
+    EMAIL, PASSWORD, DESTINATION_EMAIL, TEMPLATE_PATH = get_env()
 
     print("Fetching passport intent...")
     passport_intent_id = fetch_intent(PASSPORT_SUBDOMAIN)
@@ -165,7 +166,7 @@ if __name__ == "__main__":
     citizenship_text = extract_readable_data(citizenship_slots)
 
     # Read the email template from a local text file
-    with open("email_template.txt", "r", encoding="utf-8") as f:
+    with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
         template = f.read()
 
     # Use regex substitutions to replace placeholders with actual data

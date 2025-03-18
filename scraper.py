@@ -180,6 +180,8 @@ def get_citizenship_apt_text():
 if __name__ == "__main__":
     EMAIL, PASSWORD, DESTINATION_EMAIL, TEMPLATE_PATH, CITIZENSHIP_APT_PATH = get_env()
 
+    print(f"{datetime.now().strftime('%Y/%m/%d %H:%M:%S')} - RUNNING APPOINTMENT SCRAPING")
+    
     passport_text = get_passport_apt_text()
     citizenship_text = get_citizenship_apt_text()
     

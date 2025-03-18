@@ -8,6 +8,8 @@ from scraper import (
     send_email
 )
 import os
+from datetime import datetime
+
 from constants import CITIZENSHIP_SUBDOMAIN
 
 def setup_citizenship_appointment_data():
@@ -47,6 +49,8 @@ def notify_new_citizenship_appointments(citizenship_text):
 def main():
     global EMAIL, PASSWORD, DESTINATION_EMAIL, TEMPLATE_PATH, CITIZENSHIP_APT_PATH
     EMAIL, PASSWORD, DESTINATION_EMAIL, TEMPLATE_PATH, CITIZENSHIP_APT_PATH = get_env()
+
+    print(f"{datetime.now().strftime('%Y/%m/%d %H:%M:%S')} - RUNNING APPOINTMENT SCRAPING")
 
     setup_citizenship_appointment_data()
 

@@ -7,6 +7,12 @@ import os
 import re
 from dotenv import load_dotenv
 from email.message import EmailMessage
+from constants import (
+    PASSPORT_SUBDOMAIN,
+    AVAILABILITY_URL,
+    INTENTS_URL,
+    CITIZENSHIP_SUBDOMAIN
+)
 
 def get_env():
     load_dotenv()

@@ -83,7 +83,7 @@ TEMPLATE_PATH=/path/to/email_template.txt
 ```
 
 - EMAIL: Sender's email address (Gmail)
-- PASSWORD: Google app-specific password (16 characters in blocks of  4 separated by spacess)
+- PASSWORD: Google app-specific password (16 characters in blocks of  4 separated by spaces)
 - DESTINATION_EMAIL: Recipient’s email address
 - TEMPLATE_PATH: File path to `email_template.txt`
 

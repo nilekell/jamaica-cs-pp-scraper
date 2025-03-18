@@ -178,7 +178,7 @@ def get_citizenship_apt_text():
     return citizenship_text
 
 if __name__ == "__main__":
-    EMAIL, PASSWORD, DESTINATION_EMAIL, TEMPLATE_PATH = get_env()
+    EMAIL, PASSWORD, DESTINATION_EMAIL, TEMPLATE_PATH, CITIZENSHIP_APT_PATH = get_env()
 
     passport_text = get_passport_apt_text()
     citizenship_text = get_citizenship_apt_text()

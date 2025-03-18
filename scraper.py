@@ -7,19 +7,6 @@ import os
 from dotenv import load_dotenv
 from email.message import EmailMessage
 
-# visit url > intent created > intent used to fetch availability key > availability key used to fetch availabilities
-# intents can be used to create multiple availability keys (last created 6:20)
-# availability keys expire around 2-3 minutes after they are used to fetch slots data
-
-# TODO
-# intents created for every browser session, find way to automate retrieval of new intent value
-
-AVAILABILITY_URL = "https://api.youcanbook.me/v1/availabilities"
-INTENTS_URL = "https://api.youcanbook.me/v1/intents"
-
-passport_intent_id = "itt_00d55e5a-bcb7-418f-983b-970d70c980e8"
-citizenship_intent_id = "itt_8536231b-c31c-49d0-b26f-7b4518a13189"
-
 def get_env():
     load_dotenv()
     email = os.getenv('EMAIL') # sender
@@ -34,6 +21,23 @@ def handle_bad_response(response: requests.Response):
     else:
         print(f"Failed to fetch data from {response.request.url} - ERROR: {response.status_code}, {response.content}")
         sys.exit(1)
+
+def fetch_intent(subdomain: str):
+    data = {
+	"subdomain": subdomain,
+    "selections": {
+		"timeZone": "UTC"
+	    }
+    }
+
+    response = requests.post(INTENTS_URL, json=data)
+    if not response.ok:
+        handle_bad_response(response)
+
+    data = response.json()
+    intent_id = data['id']
+
+    return intent_id
 
 
 def fetch_availability_key(intent_id, from_date=datetime.today().date()) -> str:
@@ -132,43 +136,56 @@ def send_email(subject, text):
     # terminating the session
     smtp_server.quit()
 
+if __name__ == "__main__":
+    PASSPORT_SUBDOMAIN = "jhcukconsular"
+    CITIZENSHIP_SUBDOMAIN = "jhcukconsular-3"
 
-EMAIL, PASSWORD, DESTINATION_EMAIL = get_env()
-print("Scraping passport appointments...")
-passport_slots = fetch_available_slots(passport_intent_id)
-passport_text = extract_readable_data(passport_slots)
-print("Scraping citizenship appointments...")
-citizenship_slots = fetch_available_slots(citizenship_intent_id)
-citizenship_text = extract_readable_data(citizenship_slots)
+    AVAILABILITY_URL = "https://api.youcanbook.me/v1/availabilities"
+    INTENTS_URL = "https://api.youcanbook.me/v1/intents"
 
-email_text = f'''
-Hello,
+    print("Accessing credentials from .env file...")
+    EMAIL, PASSWORD, DESTINATION_EMAIL = get_env()
 
-Below are the upcoming appointment dates for the United Kingdom Jamaican High Commission passport and citizenship services:
+    print("Fetching passport intent...")
+    passport_intent_id = fetch_intent(PASSPORT_SUBDOMAIN)
+    print("Scraping passport appointments...")
+    passport_slots = fetch_available_slots(passport_intent_id)
+    passport_text = extract_readable_data(passport_slots)
 
-Passport appointments:
+    print("Fetching citizenship intent...")
+    citizenship_intent_id = fetch_intent(CITIZENSHIP_SUBDOMAIN)
+    print("Scraping citizenship appointments...")
+    citizenship_slots = fetch_available_slots(citizenship_intent_id)
+    citizenship_text = extract_readable_data(citizenship_slots)
 
-{passport_text}
+    email_text = f'''
+    Hello,
 
-For more information or to schedule your passport appointment, visit:
-https://jhcukconsular.youcanbook.me/
+    Below are the upcoming appointment dates for the United Kingdom Jamaican High Commission passport and citizenship services:
 
+    Passport appointments:
 
+    {passport_text}
 
-Citizenship appointments:
-
-{citizenship_text}
-
-For more information or to schedule your citizenship appointment, visit:
-https://jhcukconsular-3.youcanbook.me/
+    For more information or to schedule your passport appointment, visit:
+    https://jhcukconsular.youcanbook.me/
 
 
-For urgent consular matters only, please send an email to consular@jhcuk.com [NOT AFFILIATED WITH 'The Jamaica Scraping Team']
 
-Kind regards,
+    Citizenship appointments:
 
-The Jamaica Scraping Team
-'''
+    {citizenship_text}
 
-# print(email_text)
-send_email("Available Appointments - Jamaican High Commission", email_text)
+    For more information or to schedule your citizenship appointment, visit:
+    https://jhcukconsular-3.youcanbook.me/
+
+
+    For urgent consular matters only, please send an email to consular@jhcuk.com [NOT AFFILIATED WITH 'The Jamaica Scraping Team']
+
+    Kind regards,
+
+    The Jamaica Scraping Team
+    '''
+
+    # print(email_text)
+    send_email("Available Appointments - Jamaican High Commission", email_text)

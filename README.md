@@ -1,6 +1,8 @@
 # Jamaican High Commission Appointment Availability Checker
 
-This script retrieves available appointment slots for both Passport and Citizenship services offered by the Jamaican High Commission in the United Kingdom. It does so by interacting with the [YouCanBook.me API](https://ycbm.stoplight.io/docs/youcanbookme-api), creating an intent, obtaining an availability key, and then fetching appointment slots for several months in advance. The script can also send an email with the resulting availability information.
+The `scraper.py` script retrieves available appointment slots for both Passport and Citizenship services offered by the Jamaican High Commission in the United Kingdom. It does so by interacting with the [YouCanBook.me API](https://ycbm.stoplight.io/docs/youcanbookme-api), creating an intent, obtaining an availability key, and then fetching appointment slots for several months in advance. The script can also send an email with the resulting availability information.
+
+A companion component, `citizenship_notifier.py`, compares freshly scraped Citizenship appointments with a saved record of previously known appointment timestamps. If any new slots are detected, it sends a dedicated email alert for Citizenship appointments and updates the stored timestamps, ensuring only newly introduced slots trigger notifications.
 
 ---
 
@@ -80,12 +82,14 @@ EMAIL=your_email@gmail.com
 PASSWORD=xxxx xxxx xxxx xxxx
 DESTINATION_EMAIL=recipient@example.com
 TEMPLATE_PATH=/path/to/email_template.txt
+CITIZENSHIP_APT_PATH=/path/to/citizenship_appointment_data.txt
 ```
 
 - EMAIL: Sender's email address (Gmail)
 - PASSWORD: Google app-specific password (16 characters in blocks of  4 separated by spaces)
 - DESTINATION_EMAIL: Recipient’s email address
 - TEMPLATE_PATH: File path to `email_template.txt`
+- CITIZENSHIP_APT_PATH: File path to `citizenship_appointment_data.txt`, a local persistent store of citizenship appointment timestamps which is updated everytime new citizenship appointments are found. This file's contents is read by `citizenship_notifier.py` to conditionally send emails based on whether new citizenship appointment slots are available.
 
 ---
 
@@ -128,6 +132,7 @@ Add a new cron job entry.
 For a script you want to run every hour at minute 0:
 
 `0 * * * * /Users/YourName/Projects/venv/bin/python /Users/YourName/Projects/scraper.py`
+`0 * * * * /Users/YourName/Projects/venv/bin/python /Users/YourName/Projects/citizenship_notifier.py`
 
 0 * * * * will trigger the job at the top of every hour.
 Adjust paths to match where the script and virtual environment are stored.

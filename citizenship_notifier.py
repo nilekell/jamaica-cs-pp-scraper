@@ -14,7 +14,7 @@ def load_previous_citizenship_appointments():
     if os.path.exists(CITIZENSHIP_APT_PATH):
         with open(CITIZENSHIP_APT_PATH, "r", encoding="utf-8") as f:
             lines = f.read().splitlines()
-        return set(int(line) for line in lines if line.strip().isdigit())
+        return set(str(line) for line in lines if line.strip().isdigit())
     return set()
 
 def save_citizenship_appointments(appointments):
@@ -35,6 +35,7 @@ def notify_new_citizenship_appointments(citizenship_text):
     passport_text = get_passport_apt_text()
     email_text = fill_email_text(TEMPLATE_PATH, passport_text, citizenship_text)
 
+    # print(email_text)
     send_email(subject, email_text)
 
 def main():

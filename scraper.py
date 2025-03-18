@@ -4,6 +4,7 @@ from datetime import *
 from dateutil.relativedelta import *
 import smtplib
 import os
+import re
 from dotenv import load_dotenv
 from email.message import EmailMessage
 
@@ -123,18 +124,22 @@ def extract_readable_data(monthly_slots):
 
 
 def send_email(subject, text):
-    smtp_server = smtplib.SMTP('smtp.gmail.com', 587) # creates SMTP session
-    smtp_server.starttls()
-    smtp_server.login(EMAIL, PASSWORD)
-    # construct message to be sent
-    message = EmailMessage()
-    message['Subject'] = subject
-    message['From'] = EMAIL
-    message['To'] = DESTINATION_EMAIL
-    message.set_content(text)
-    smtp_server.send_message(message)
-    # terminating the session
-    smtp_server.quit()
+    try:
+        smtp_server = smtplib.SMTP('smtp.gmail.com', 587) # creates SMTP session
+        smtp_server.starttls()
+        smtp_server.login(EMAIL, PASSWORD)
+        # construct message to be sent
+        message = EmailMessage()
+        message['Subject'] = subject
+        message['From'] = EMAIL
+        message['To'] = DESTINATION_EMAIL
+        message.set_content(text)
+        smtp_server.send_message(message)
+        # terminating the session
+        smtp_server.quit()
+    except:
+        print("ERROR: An error occured while attempting to create and send email.")
+        sys.exit(1)
 
 if __name__ == "__main__":
     PASSPORT_SUBDOMAIN = "jhcukconsular"
@@ -158,34 +163,16 @@ if __name__ == "__main__":
     citizenship_slots = fetch_available_slots(citizenship_intent_id)
     citizenship_text = extract_readable_data(citizenship_slots)
 
-    email_text = f'''
-    Hello,
+    # Read the email template from a local text file
+    with open("email_template.txt", "r", encoding="utf-8") as f:
+        template = f.read()
 
-    Below are the upcoming appointment dates for the United Kingdom Jamaican High Commission passport and citizenship services:
-
-    Passport appointments:
-
-    {passport_text}
-
-    For more information or to schedule your passport appointment, visit:
-    https://jhcukconsular.youcanbook.me/
-
-
-
-    Citizenship appointments:
-
-    {citizenship_text}
-
-    For more information or to schedule your citizenship appointment, visit:
-    https://jhcukconsular-3.youcanbook.me/
-
-
-    For urgent consular matters only, please send an email to consular@jhcuk.com [NOT AFFILIATED WITH 'The Jamaica Scraping Team']
-
-    Kind regards,
-
-    The Jamaica Scraping Team
-    '''
+    # Use regex substitutions to replace placeholders with actual data
+    email_text = re.sub(r"###PASSPORT_TEXT###", passport_text, template)
+    email_text = re.sub(r"###CITIZENSHIP_TEXT###", citizenship_text, email_text)
 
     # print(email_text)
     send_email("Available Appointments - Jamaican High Commission", email_text)
+
+    print("Scraper executed successsfully.")
+    

@@ -20,8 +20,9 @@ def get_env():
     email = os.getenv('EMAIL') # sender
     password = os.getenv('PASSWORD') # google app-specific passwords can be created at https://myaccount.google.com/apppasswords
     destination_email = os.getenv('DESTINATION_EMAIL') # receiver
-    template_path = os.getenv('TEMPLATE_PATH') 
-    return email, password, destination_email, template_path
+    template_path = os.getenv('TEMPLATE_PATH')
+    cs_apt_path = os.getenv('CITIZENSHIP_APT_PATH') 
+    return email, password, destination_email, template_path, cs_apt_path
 
 def handle_bad_response(response: requests.Response):
     if response.status_code == 429: # https://ycbm.stoplight.io/#rate-limits
@@ -100,7 +101,7 @@ def extract_readable_data(monthly_slots):
     all the slots for a given month.
     """
     print("Converting slot data into readable format...")
-    
+
     overall_text = ""
 
     for item in monthly_slots:

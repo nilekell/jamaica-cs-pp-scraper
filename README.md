@@ -89,7 +89,7 @@ CITIZENSHIP_APT_PATH=/path/to/citizenship_appointment_data.txt
 - PASSWORD: Google app-specific password (16 characters in blocks of  4 separated by spaces)
 - DESTINATION_EMAIL: Recipient’s email address
 - TEMPLATE_PATH: File path to `email_template.txt`
-- CITIZENSHIP_APT_PATH: File path to `citizenship_appointment_data.txt`, a local persistent store of citizenship appointment timestamps which is updated everytime new citizenship appointments are found. This file's contents is read by `citizenship_notifier.py` to conditionally send emails based on whether new citizenship appointment slots are available.
+- CITIZENSHIP_APT_PATH: **YOU DO NOT NEED TO CREATE THE FILE AT YOUR SPECIFIED PATH. THIS IS MANAGED BY THE SCRIPT.** `citizenship_appointment_data.txt` is a local persistent store of citizenship appointment timestamps which is updated everytime new citizenship appointments are found. This file's contents is read by `citizenship_notifier.py` to conditionally send emails based on whether new citizenship appointment slots are available.
 
 ---
 

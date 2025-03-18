@@ -135,6 +135,7 @@ def send_email(subject, text):
         message['To'] = DESTINATION_EMAIL
         message.set_content(text)
         smtp_server.send_message(message)
+        print("Email sent.")
         # terminating the session
         smtp_server.quit()
     except:

@@ -15,6 +15,7 @@ from constants import (
 )
 
 def get_env():
+    print("Accessing credentials from .env file...")
     load_dotenv()
     email = os.getenv('EMAIL') # sender
     password = os.getenv('PASSWORD') # google app-specific passwords can be created at https://myaccount.google.com/apppasswords
@@ -31,6 +32,7 @@ def handle_bad_response(response: requests.Response):
         sys.exit(1)
 
 def fetch_intent(subdomain: str):
+    print(f"Fetching {subdomain} intent...")
     data = {
 	"subdomain": subdomain,
     "selections": {
@@ -65,6 +67,7 @@ def fetch_availability_key(intent_id, from_date=datetime.today().date()) -> str:
 
 
 def fetch_available_slots(intent_id: str, from_date=datetime.today().date()):
+    print("Scraping appointments...")
     base_month = from_date.replace(day=1)
 
     monthly_slots = []
@@ -96,6 +99,8 @@ def extract_readable_data(monthly_slots):
     monthly_slots is a list of lists, where each sublist represents
     all the slots for a given month.
     """
+    print("Converting slot data into readable format...")
+    
     overall_text = ""
 
     for item in monthly_slots:
@@ -129,6 +134,14 @@ def extract_readable_data(monthly_slots):
     print(overall_text)
     return overall_text
 
+def fill_email_text(template_path, passport_text, citizenship_text):
+    with open(template_path, "r", encoding="utf-8") as f:
+        template = f.read()
+
+    email_text = re.sub(r"###PASSPORT_TEXT###", passport_text, template)
+    email_text = re.sub(r"###CITIZENSHIP_TEXT###", citizenship_text, email_text)
+
+    return email_text
 
 def send_email(subject, text):
     try:
@@ -149,35 +162,29 @@ def send_email(subject, text):
         print("ERROR: An error occured while attempting to create and send email.")
         sys.exit(1)
 
-if __name__ == "__main__":
-    PASSPORT_SUBDOMAIN = "jhcukconsular"
-    CITIZENSHIP_SUBDOMAIN = "jhcukconsular-3"
-
-    AVAILABILITY_URL = "https://api.youcanbook.me/v1/availabilities"
-    INTENTS_URL = "https://api.youcanbook.me/v1/intents"
-
-    print("Accessing credentials from .env file...")
-    EMAIL, PASSWORD, DESTINATION_EMAIL, TEMPLATE_PATH = get_env()
-
-    print("Fetching passport intent...")
+def get_passport_apt_text():
     passport_intent_id = fetch_intent(PASSPORT_SUBDOMAIN)
-    print("Scraping passport appointments...")
     passport_slots = fetch_available_slots(passport_intent_id)
     passport_text = extract_readable_data(passport_slots)
 
-    print("Fetching citizenship intent...")
+    return passport_text
+
+def get_citizenship_apt_text():
     citizenship_intent_id = fetch_intent(CITIZENSHIP_SUBDOMAIN)
-    print("Scraping citizenship appointments...")
     citizenship_slots = fetch_available_slots(citizenship_intent_id)
     citizenship_text = extract_readable_data(citizenship_slots)
 
-    with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
-        template = f.read()
+    return citizenship_text
 
-    email_text = re.sub(r"###PASSPORT_TEXT###", passport_text, template)
-    email_text = re.sub(r"###CITIZENSHIP_TEXT###", citizenship_text, email_text)
+if __name__ == "__main__":
+    EMAIL, PASSWORD, DESTINATION_EMAIL, TEMPLATE_PATH = get_env()
 
+    passport_text = get_passport_apt_text()
+    citizenship_text = get_citizenship_apt_text()
+    
+    email_text = fill_email_text(TEMPLATE_PATH, passport_text, citizenship_text)
     # print(email_text)
+
     send_email("Available Appointments - Jamaican High Commission", email_text)
 
     print("Scraper executed successsfully.")

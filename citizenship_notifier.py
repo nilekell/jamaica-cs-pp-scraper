@@ -10,6 +10,12 @@ from scraper import (
 import os
 from constants import CITIZENSHIP_SUBDOMAIN
 
+def setup_citizenship_appointment_data():
+    if not os.path.exists(CITIZENSHIP_APT_PATH):
+        # Create the file if it does not exist
+        with open(CITIZENSHIP_APT_PATH, "w", encoding="utf-8"):
+            pass
+
 def load_previous_citizenship_appointments():
     if os.path.exists(CITIZENSHIP_APT_PATH):
         with open(CITIZENSHIP_APT_PATH, "r", encoding="utf-8") as f:
@@ -41,6 +47,8 @@ def notify_new_citizenship_appointments(citizenship_text):
 def main():
     global EMAIL, PASSWORD, DESTINATION_EMAIL, TEMPLATE_PATH, CITIZENSHIP_APT_PATH
     EMAIL, PASSWORD, DESTINATION_EMAIL, TEMPLATE_PATH, CITIZENSHIP_APT_PATH = get_env()
+
+    setup_citizenship_appointment_data()
 
     citizenship_intent_id = fetch_intent(CITIZENSHIP_SUBDOMAIN)
     citizenship_slots = fetch_available_slots(citizenship_intent_id)

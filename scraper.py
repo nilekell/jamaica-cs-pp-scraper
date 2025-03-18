@@ -165,11 +165,9 @@ if __name__ == "__main__":
     citizenship_slots = fetch_available_slots(citizenship_intent_id)
     citizenship_text = extract_readable_data(citizenship_slots)
 
-    # Read the email template from a local text file
     with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
         template = f.read()
 
-    # Use regex substitutions to replace placeholders with actual data
     email_text = re.sub(r"###PASSPORT_TEXT###", passport_text, template)
     email_text = re.sub(r"###CITIZENSHIP_TEXT###", citizenship_text, email_text)
 

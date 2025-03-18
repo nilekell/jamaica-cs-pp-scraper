@@ -11,9 +11,10 @@ This script retrieves available appointment slots for both Passport and Citizens
 3. [Setup Instructions](#setup-instructions)  
 4. [How It Works](#how-it-works)  
 5. [Environment Variables](#environment-variables)  
-6. [Usage](#usage)  
-7. [References](#references)
-8. [Notes](#notes)
+6. [Usage](#usage)
+7. [Automation](#automation)
+8. [References](#references)
+9. [Notes](#notes)
 
 ---
 
@@ -98,6 +99,41 @@ python3 scraper.py
 ```
 
 The script will print information to the console and can optionally send an email with results if the relevant lines are uncommented.
+
+---
+
+## Automation
+Cron Job Setup (macOS)
+
+To automate this script to run every hour on a Mac, follow these steps:
+- Identify the Python interpreter path in the virtual environment.
+- Activate the virtual environment:
+
+`source /path/to/venv/bin/activate`
+
+Then run:
+
+`which python`
+
+Copy the output path, for example:
+
+`/Users/YourName/Projects/venv/bin/python`
+
+Edit your crontab.
+Open the crontab editor:
+
+`crontab -e`
+
+Add a new cron job entry.
+For a script you want to run every hour at minute 0:
+
+`0 * * * * /Users/YourName/Projects/venv/bin/python /Users/YourName/Projects/scraper.py`
+
+0 * * * * will trigger the job at the top of every hour.
+Adjust paths to match where the script and virtual environment are stored.
+
+Save the crontab.
+When you exit the editor, cron will automatically register the new job.
 
 ---
 
